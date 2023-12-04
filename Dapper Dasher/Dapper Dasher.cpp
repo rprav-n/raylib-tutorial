@@ -31,9 +31,10 @@ int main()
 
     // nebula
     Texture2D nebula = LoadTexture("./textures/12_nebula_spritesheet.png");
-    Rectangle nebula_rect = {0.0, 0.0, static_cast<float>(nebula.width / 8), static_cast<float>(nebula.height / 8)}; // x, y, width, height
+    Rectangle nebula_rect = { 0.0, 0.0, static_cast<float>(nebula.width / 8), 
+        static_cast<float>(nebula.height / 8) }; // x, y, width, height
 
-    Vector2 nebula_pos = {WINDOW_WIDTH, WINDOW_HEIGHT - nebula_rect.height};
+    Vector2 nebula_pos = { WINDOW_WIDTH, WINDOW_HEIGHT - nebula_rect.height };
     int nebula_vel = 600;
 
     SetTargetFPS(60);
@@ -66,16 +67,20 @@ int main()
             scarfy_pos.y = WINDOW_HEIGHT - scarfy_rect.height;
         }
 
-        running_time += dt;
-        if (running_time >= update_time && can_jump)
+        if (can_jump)
         {
-            running_time = 0.0f;
-            frame++;
-            if (frame > 5)
+            running_time += dt;
+            if (running_time >= update_time)
             {
-                frame = 0;
+                running_time = 0.0f;
+                frame++;
+                if (frame > 5)
+                {
+                    frame = 0;
+                }
             }
         }
+       
 
         scarfy_rect.x = frame * scarfy_rect.width;
 
