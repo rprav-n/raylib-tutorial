@@ -1,134 +1,145 @@
 #include "raylib.h"
+#include <iostream>
+
+
+struct AnimData
+{
+	Rectangle rect;
+	Vector2 pos;
+	int frame;
+	float update_time;
+	float running_time;
+};
+
+bool is_on_ground(AnimData data, int window_height)
+{
+	return data.pos.y >= window_height - data.rect.height;
+}
+
+AnimData update_anim_data(AnimData data, int vel, float dt, int max_frame)
+{
+	data.running_time += dt;
+	if (data.running_time > data.update_time)
+	{
+		data.frame++;
+		if (data.frame > max_frame)
+		{
+			data.frame = 0;
+		}
+		data.running_time = 0.0f;
+	}
+
+	return data;
+}
 
 int main()
 {
-    const int WINDOW_WIDTH = 600;
-    const int WINDOW_HEIGHT = 600;
+	const int WINDOW_WIDTH = 600;
+	const int WINDOW_HEIGHT = 600;
 
-    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Dapper Dasher");
+	InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Dapper Dasher");
 
-    int velocity = 0;
-    const int jump_vel = 700;
+	int velocity = 0;
+	const int jump_vel = 700;
 
-    const int GRAVITY = 1600;
-    bool can_jump = true;
+	const int GRAVITY = 1600;
+	bool can_jump = true;
 
-    // scarfy
-    Texture2D scarfy = LoadTexture("./textures/scarfy.png");
-    Rectangle scarfy_rect;
-    scarfy_rect.width = scarfy.width / 6;
-    scarfy_rect.height = scarfy.height;
-    scarfy_rect.x = 0;
-    scarfy_rect.y = 0;
+	// scarfy
+	Texture2D scarfy = LoadTexture("./textures/scarfy.png");
+	AnimData scarfy_data;
+	scarfy_data.rect = Rectangle{ 0, 0, static_cast<float>(scarfy.width / 6), static_cast<float>(scarfy.height) }; // x, y, width, height
+	scarfy_data.pos = Vector2{ WINDOW_WIDTH / 2 - scarfy_data.rect.width / 2, WINDOW_HEIGHT - scarfy_data.rect.height };
+	scarfy_data.frame = 0;
+	scarfy_data.running_time = 0.0f;
+	scarfy_data.update_time = 1.0f / 8.0f;
 
-    Vector2 scarfy_pos;
-    scarfy_pos.x = WINDOW_WIDTH / 2 - scarfy_rect.width / 2;
-    scarfy_pos.y = WINDOW_HEIGHT - scarfy_rect.height;
+	// nebula
+	int nebula_vel = 200;
+	Texture2D nebula = LoadTexture("./textures/12_nebula_spritesheet.png");
 
-    int frame = 0;
-    const float update_time = 1.0f / 8.0f;
-    float running_time = 0.0f;
+	const int SIZE_OF_NEBULAE = 6;
+	AnimData nebulae[SIZE_OF_NEBULAE];
 
-    // nebula
-    Texture2D nebula = LoadTexture("./textures/12_nebula_spritesheet.png");
-    Rectangle nebula_rect = { 0.0, 0.0, static_cast<float>(nebula.width / 8), 
-        static_cast<float>(nebula.height / 8) }; // x, y, width, height
+	for (int i = 0; i < SIZE_OF_NEBULAE; i++)
+	{
+		nebulae[i].rect = { 0.0, 0.0, static_cast<float>(nebula.width / 8), static_cast<float>(nebula.height / 8) };
+		nebulae[i].pos = { WINDOW_WIDTH , WINDOW_HEIGHT - nebulae[i].rect.height};
+		nebulae[i].frame = 0;
+		nebulae[i].running_time = 0.0f;
+		nebulae[i].update_time = 1.0f / 12.0f;
+	}
+	for (int i = 0; i < SIZE_OF_NEBULAE; i++)
+	{
+		nebulae[i].pos.x = WINDOW_WIDTH + 300 * i;
+	}
+	
 
-    Vector2 nebula_pos = { WINDOW_WIDTH, WINDOW_HEIGHT - nebula_rect.height };
-    int nebula_vel = 200;
-    int nebula_frame = 0;
-    float nebula_running_time = 0.0f;
+	SetTargetFPS(60);
+	while (!WindowShouldClose())
+	{
+		float dt = GetFrameTime();
 
-    Rectangle nebula_rect_2 = { 0.0, 0.0, static_cast<float>(nebula.width / 8),
-        static_cast<float>(nebula.height / 8) };
-    Vector2 nebula_pos_2 = { WINDOW_WIDTH + 200, WINDOW_HEIGHT - nebula_rect_2.height };
-    int nebula_frame_2 = 0;
-    float nebula_running_time_2 = 0.0f;
+		BeginDrawing();
+		ClearBackground(WHITE);
 
+		if (is_on_ground(scarfy_data, WINDOW_HEIGHT))
+		{
+			velocity = 0;
+			can_jump = true;
+		}
+		else
+		{
+			velocity += GRAVITY * dt;
+		}
 
-    SetTargetFPS(60);
-    while (!WindowShouldClose())
-    {
-        float dt = GetFrameTime();
+		if (IsKeyPressed(KEY_SPACE) && can_jump)
+		{
+			velocity -= jump_vel;
+			can_jump = false;
+		}
 
-        BeginDrawing();
-        ClearBackground(WHITE);
+		scarfy_data.pos.y += velocity * dt;
+		if (scarfy_data.pos.y >= WINDOW_HEIGHT - scarfy_data.rect.height)
+		{
+			scarfy_data.pos.y = WINDOW_HEIGHT - scarfy_data.rect.height;
+		}
+		
 
-        if (scarfy_pos.y >= WINDOW_HEIGHT - scarfy_rect.height)
-        {
-            velocity = 0;
-            can_jump = true;
-        }
-        else
-        {
-            velocity += GRAVITY * dt;
-        }
+		if (can_jump)
+		{
+			scarfy_data = update_anim_data(scarfy_data, velocity, dt, 5);
+		}
 
-        if (IsKeyPressed(KEY_SPACE) && can_jump)
-        {
-            velocity -= jump_vel;
-            can_jump = false;
-        }
+		scarfy_data.rect.x = scarfy_data.frame * scarfy_data.rect.width;
 
-        scarfy_pos.y += velocity * dt;
-        if (scarfy_pos.y >= WINDOW_HEIGHT - scarfy_rect.height)
-        {
-            scarfy_pos.y = WINDOW_HEIGHT - scarfy_rect.height;
-        }
+		for (int i = 0; i < SIZE_OF_NEBULAE; i++)
+		{
+			nebulae[i].pos.x -= nebula_vel * dt;
+			nebulae[i] = update_anim_data(nebulae[i], nebula_vel, dt, 7);
+		}
 
-        if (can_jump)
-        {
-            running_time += dt;
-            if (running_time >= update_time)
-            {
-                running_time = 0.0f;
-                frame++;
-                if (frame > 5)
-                {
-                    frame = 0;
-                }
-            }
-        }
+		for (int i = 0; i < SIZE_OF_NEBULAE; i++)
+		{
+			nebulae[i].rect.x = nebulae[i].frame * nebulae[i].rect.width;
+		}
+			
 
-        scarfy_rect.x = frame * scarfy_rect.width;
-       
-        nebula_pos.x -= nebula_vel * dt;
-        nebula_running_time += dt;
-        if (nebula_running_time > update_time)
-        {
-            nebula_frame++;
-            if (nebula_frame > 7) {
-                nebula_frame = 0;
-            }
-            nebula_running_time = 0.0f;
-        }
-        nebula_rect.x = nebula_frame * nebula_rect.width;
+		DrawTextureRec(scarfy, scarfy_data.rect, scarfy_data.pos, WHITE);
 
-        nebula_pos_2.x -= nebula_vel * dt;
-        nebula_running_time_2 += dt;
-        if (nebula_running_time_2 > update_time)
-        {
-            nebula_frame_2++;
-            if (nebula_frame_2 > 7)
-            {
-                nebula_frame_2 = 0;
-            }
-            nebula_running_time_2 = 0.0f;
-        }
-        nebula_rect_2.x = nebula_frame_2 * nebula_rect_2.width;
-        
+		for (int i = 0; i < SIZE_OF_NEBULAE; i++)
+		{
+			DrawTextureRec(nebula, nebulae[i].rect, nebulae[i].pos, WHITE);
+		}
+		
 
-        DrawTextureRec(scarfy, scarfy_rect, scarfy_pos, WHITE);
-        DrawTextureRec(nebula, nebula_rect, nebula_pos, WHITE);
-        DrawTextureRec(nebula, nebula_rect_2, nebula_pos_2, RED);
+		EndDrawing();
+	}
 
-        EndDrawing();
-    }
+	UnloadTexture(scarfy);
+	UnloadTexture(nebula);
 
-    UnloadTexture(scarfy);
-    UnloadTexture(nebula);
+	CloseWindow();
 
-    CloseWindow();
-
-    return 0;
+	return 0;
 }
