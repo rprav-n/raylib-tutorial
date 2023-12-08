@@ -14,8 +14,13 @@ int main()
 
     Texture2D map = LoadTexture("./nature_tileset/background.png");
     Vector2 map_pos = { 0.0f, 0.0f };
-
     const float SPEED = 4.0f;
+
+    Texture2D knight = LoadTexture("./characters/knight_idle_spritesheet.png");
+    Vector2 knight_pos = Vector2{ 
+        WIN_WIDTH / 2.0f - (0.5f * knight.width / 6.0f) * 4.0f, 
+        WIN_HEIGHT / 2.0f - (0.5f * knight.height) * 4.0f
+    };
 
     SetTargetFPS(60);
     while (!WindowShouldClose())
@@ -37,13 +42,18 @@ int main()
             map_pos = Vector2Subtract(map_pos, direction);
         }
 
-        
-
         DrawTextureEx(map, map_pos, 0.0f, 4.0f, WHITE);
+
+        Rectangle source = Rectangle{ 0, 0, knight.width / 6.0f, (float)knight.height };
+        Rectangle dest = Rectangle{ knight_pos.x, knight_pos.y, 4.0f * knight.width / 6.0f, 4.0f * knight.height };
+        DrawTexturePro(knight, source, dest, Vector2{0, 0}, 0.0f, WHITE);
+
+
 
         EndDrawing();
     }
 
+    UnloadTexture(knight);
     UnloadTexture(map);
     CloseWindow();
 
