@@ -182,13 +182,13 @@ int main()
 		else
 		{
 			DrawTextureRec(scarfy, scarfy_data.rect, scarfy_data.pos, WHITE);
-			DrawRectangleLines(scarfy_data.pos.x, scarfy_data.pos.y, scarfy_data.rect.width, scarfy_data.rect.height, RED);
+			// DrawRectangleLines(scarfy_data.pos.x, scarfy_data.pos.y, scarfy_data.rect.width, scarfy_data.rect.height, RED);
 
 			for (int i = 0; i < SIZE_OF_NEBULAE; i++)
 			{
 				DrawTextureRec(nebula, nebulae[i].rect, nebulae[i].pos, WHITE);
-				DrawRectangleLines(nebulae[i].pos.x + offset, nebulae[i].pos.y + offset, nebulae[i].rect.width - 2 * offset,
-								   nebulae[i].rect.height - 2 * offset, RED);
+				// DrawRectangleLines(nebulae[i].pos.x + offset, nebulae[i].pos.y + offset, nebulae[i].rect.width - 2 * offset,
+				// 				   nebulae[i].rect.height - 2 * offset, RED);
 			}
 		}
 
